@@ -9763,7 +9763,7 @@
       },
       "publicCloud.storage.object.Bucket": {
         "type": "object",
-        "description": "An S3-compatible object storage bucket",
+        "description": "An S3™ compatible object storage bucket",
         "properties": {
           "checksum": {
             "type": "string",
@@ -9828,7 +9828,7 @@
       },
       "publicCloud.storage.object.BucketCreation": {
         "type": "object",
-        "description": "Payload to create an S3 bucket",
+        "description": "Payload to create an S3™ compatible bucket",
         "properties": {
           "targetSpec": {
             "allOf": [
@@ -9845,7 +9845,7 @@
       },
       "publicCloud.storage.object.BucketCurrentState": {
         "type": "object",
-        "description": "Current observed state of an S3 bucket from the S3 backend",
+        "description": "Current observed state of an S3™ compatible bucket from the S3™ backend",
         "properties": {
           "encryption": {
             "allOf": [
@@ -9881,6 +9881,18 @@
             "nullable": true,
             "readOnly": true
           },
+          "objectsCount": {
+            "type": "integer",
+            "description": "Bucket total objects count. Returned only on a single bucket GET, never on LIST.",
+            "nullable": true,
+            "readOnly": true
+          },
+          "objectsSize": {
+            "type": "integer",
+            "description": "Bucket total objects size in bytes. Returned only on a single bucket GET, never on LIST.",
+            "nullable": true,
+            "readOnly": true
+          },
           "tags": {
             "type": "object",
             "description": "Current metadata tags",
@@ -9899,19 +9911,26 @@
             "description": "Current versioning configuration",
             "nullable": true,
             "readOnly": true
+          },
+          "virtualHost": {
+            "type": "string",
+            "description": "Bucket virtual host, as a hostname without scheme (for example my-data-bucket.s3.gra.io.cloud.ovh.net). Returned only on a single bucket GET, never on LIST.",
+            "nullable": true,
+            "readOnly": true
           }
         }
       },
       "publicCloud.storage.object.BucketEncryptionAlgorithmEnum": {
         "type": "string",
-        "description": "Supported encryption algorithms for S3 buckets",
+        "description": "Supported encryption algorithms for S3™ compatible buckets",
         "enum": [
-          "AES256"
+          "AES256",
+          "PLAINTEXT"
         ]
       },
       "publicCloud.storage.object.BucketEncryptionConfig": {
         "type": "object",
-        "description": "Server-side encryption configuration for an S3 bucket",
+        "description": "Server-side encryption configuration for an S3™ compatible bucket",
         "properties": {
           "algorithm": {
             "allOf": [
@@ -9919,7 +9938,7 @@
                 "$ref": "#/components/schemas/publicCloud.storage.object.BucketEncryptionAlgorithmEnum"
               }
             ],
-            "description": "Encryption algorithm (e.g. AES256)"
+            "description": "Encryption algorithm"
           }
         },
         "required": [
@@ -9928,7 +9947,7 @@
       },
       "publicCloud.storage.object.BucketLocation": {
         "type": "object",
-        "description": "Geographic region for an S3 bucket",
+        "description": "Geographic region for an S3™ compatible bucket",
         "properties": {
           "region": {
             "type": "string",
@@ -9941,7 +9960,7 @@
       },
       "publicCloud.storage.object.BucketObjectLockConfig": {
         "type": "object",
-        "description": "Object lock (WORM) configuration for an S3 bucket",
+        "description": "Object lock (WORM) configuration for an S3™ compatible bucket",
         "properties": {
           "mode": {
             "allOf": [
@@ -9977,7 +9996,7 @@
       },
       "publicCloud.storage.object.BucketTargetSpec": {
         "type": "object",
-        "description": "Target specification for an S3 bucket",
+        "description": "Target specification for an S3™ compatible bucket",
         "properties": {
           "encryption": {
             "allOf": [
@@ -10039,11 +10058,12 @@
       },
       "publicCloud.storage.object.BucketUpdate": {
         "type": "object",
-        "description": "Payload to update an S3 bucket",
+        "description": "Payload to update an S3™ compatible bucket",
         "properties": {
           "checksum": {
             "type": "string",
-            "description": "Computed hash controlling concurrent modifications; represents the current target specification value"
+            "description": "Optional concurrency-control checksum. When supplied, it must match the resource's current checksum or the request is rejected with a 409 checksum-mismatch conflict. When omitted or empty, the concurrency check is skipped and the write is forced (last-write-wins).",
+            "nullable": true
           },
           "targetSpec": {
             "allOf": [
@@ -10055,13 +10075,12 @@
           }
         },
         "required": [
-          "checksum",
           "targetSpec"
         ]
       },
       "publicCloud.storage.object.BucketUpdateTargetSpec": {
         "type": "object",
-        "description": "Target specification for updating an S3 bucket (mutable fields only)",
+        "description": "Target specification for updating an S3™ compatible bucket (mutable fields only)",
         "properties": {
           "encryption": {
             "allOf": [
@@ -10107,7 +10126,7 @@
       },
       "publicCloud.storage.object.BucketVersioningConfig": {
         "type": "object",
-        "description": "Versioning configuration for an S3 bucket",
+        "description": "Versioning configuration for an S3™ compatible bucket",
         "properties": {
           "status": {
             "allOf": [
@@ -10124,7 +10143,7 @@
       },
       "publicCloud.storage.object.BucketVersioningStatusEnum": {
         "type": "string",
-        "description": "Versioning status for an S3 bucket",
+        "description": "Versioning status for an S3™ compatible bucket",
         "enum": [
           "DISABLED",
           "ENABLED",
@@ -27250,7 +27269,8 @@
     },
     "/publicCloud/project/{projectId}/storage/object/bucket": {
       "get": {
-        "summary": "List S3 buckets",
+        "summary": "List buckets",
+        "description": "Returns the buckets of the project.",
         "security": [
           {
             "oAuth2AuthCode": []
@@ -27304,8 +27324,8 @@
         ],
         "x-badges": [
           {
-            "color": "orange",
-            "label": "Internal use only"
+            "color": "blue",
+            "label": "Alpha version"
           }
         ],
         "x-iam-actions": [
@@ -27318,7 +27338,8 @@
         "x-expanded-response": "PublicCloudStorageObjectBucket"
       },
       "post": {
-        "summary": "Create a new S3 bucket",
+        "summary": "Create a bucket",
+        "description": "Creates a bucket in a region. Versioning, encryption, object lock and tags can be set at creation.",
         "security": [
           {
             "oAuth2AuthCode": []
@@ -27446,8 +27467,8 @@
         ],
         "x-badges": [
           {
-            "color": "orange",
-            "label": "Internal use only"
+            "color": "blue",
+            "label": "Alpha version"
           }
         ],
         "x-iam-actions": [
@@ -27460,7 +27481,8 @@
     },
     "/publicCloud/project/{projectId}/storage/object/bucket/{bucketName}": {
       "delete": {
-        "summary": "Delete an S3 bucket",
+        "summary": "Delete a bucket",
+        "description": "Deletes the bucket.",
         "security": [
           {
             "oAuth2AuthCode": []
@@ -27568,8 +27590,8 @@
         ],
         "x-badges": [
           {
-            "color": "orange",
-            "label": "Internal use only"
+            "color": "blue",
+            "label": "Alpha version"
           }
         ],
         "x-iam-actions": [
@@ -27580,7 +27602,8 @@
         ]
       },
       "get": {
-        "summary": "Get an S3 bucket",
+        "summary": "Get a bucket",
+        "description": "Returns the bucket configuration and its current state.",
         "security": [
           {
             "oAuth2AuthCode": []
@@ -27627,12 +27650,15 @@
                           "region": "GRA"
                         },
                         "name": "my-data-bucket",
+                        "objectsCount": 1,
+                        "objectsSize": 1048576,
                         "tags": {
                           "env": "production"
                         },
                         "versioning": {
                           "status": "ENABLED"
-                        }
+                        },
+                        "virtualHost": "my-data-bucket.s3.gra.io.cloud.ovh.net"
                       },
                       "currentTasks": [],
                       "id": "my-data-bucket",
@@ -27696,8 +27722,8 @@
         ],
         "x-badges": [
           {
-            "color": "orange",
-            "label": "Internal use only"
+            "color": "blue",
+            "label": "Alpha version"
           }
         ],
         "x-iam-actions": [
@@ -27709,7 +27735,8 @@
         "x-response-identifier": "id"
       },
       "put": {
-        "summary": "Update an S3 bucket configuration",
+        "summary": "Update a bucket",
+        "description": "Updates the bucket configuration. Send the current checksum to prevent overwriting a concurrent change; without it, the last write wins.",
         "security": [
           {
             "oAuth2AuthCode": []
@@ -27846,8 +27873,8 @@
         ],
         "x-badges": [
           {
-            "color": "orange",
-            "label": "Internal use only"
+            "color": "blue",
+            "label": "Alpha version"
           }
         ],
         "x-iam-actions": [
